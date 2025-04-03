@@ -244,6 +244,17 @@ export async function handleInteraction(interaction) {
       });
 
       await logTicketAction(interaction.guild, ticketNumber, interaction.user.id, 'close', transcript);
+    const fileName = `ticket-${ticketNumber}.html`;
+    const filePath = join(__dirname, '../../transcripts', fileName);
+    const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
+
+    if (publicUrl) {
+      await interaction.followUp({
+        content: `📄 Transcript du ticket : ${publicUrl}`,
+        flags: [4096]
+      });
+    }
+
 
       setTimeout(async () => {
         await interaction.channel.delete();
