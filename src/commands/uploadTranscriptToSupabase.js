@@ -1,4 +1,3 @@
-import { uploadTranscriptToSupabase } from '../commands/uploadTranscriptToSupabase.js';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 
