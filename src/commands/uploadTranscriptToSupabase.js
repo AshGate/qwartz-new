@@ -3,9 +3,10 @@ console.log("🧪 SUPABASE_ANON_KEY =", process.env.SUPABASE_ANON_KEY);
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 
-// Initialise Supabase
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE
+);
 
 /**
  * Upload un transcript HTML sur Supabase Storage
