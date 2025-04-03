@@ -244,20 +244,23 @@ export async function handleInteraction(interaction) {
       });
 
       await logTicketAction(interaction.guild, ticketNumber, interaction.user.id, 'close', transcript);
+
+      setTimeout(async () => {
+        
     const fileName = `ticket-${ticketNumber}.html`;
     const filePath = join(__dirname, '../../transcripts', fileName);
     const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
 
+    console.log("➡️ publicUrl :", publicUrl);
+
     if (publicUrl) {
-      await interaction.followUp({
-        content: `📄 Transcript du ticket : ${publicUrl}`,
-        flags: [4096]
+      await interaction.channel.send({
+        content: `📄 Transcript du ticket : ${publicUrl}`
       });
     }
 
 
-      setTimeout(async () => {
-        await interaction.channel.delete();
+    await interaction.channel.delete();
       }, 5000);
     } catch (error) {
       console.error('Erreur lors de la création du transcript:', error);
