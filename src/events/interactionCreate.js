@@ -1,6 +1,6 @@
 import { getTicketDataByChannelId, deleteTicketData } from '../database/db.js';
 import { generateTranscript } from '../utils/transcript.js';
-import { uploadTranscriptToSupabase } from './uploadTranscriptToSupabase.js';
+import { uploadTranscriptToSupabase } from '../commands/uploadTranscriptToSupabase.js';
 import { logTicketAction } from '../utils/logging.js';
 import fs from 'fs';
 import { join } from 'path';
