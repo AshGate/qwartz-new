@@ -1,7 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from './src/config.js';
 import { setupEventHandlers } from './src/handlers/eventHandler.js';
-import './src/server.js';
 
 const client = new Client({
   intents: [

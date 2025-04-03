@@ -1,8 +1,10 @@
+import { uploadTranscriptToSupabase } from '../commands/uploadTranscriptToSupabase.js';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 
 // Initialise Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
 
 /**
  * Upload un transcript HTML sur Supabase Storage

@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
 import db from '../database/db.js';
+import { uploadTranscriptToSupabase } from '../commands/uploadTranscriptToSupabase.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,11 +81,14 @@ async function logTicketAction(guild, ticketNumber, userId, action, transcript =
     const filePath = join(transcriptsDir, fileName);
     fs.writeFileSync(filePath, transcript);
 
-    // Ajouter le lien direct au transcript
-    embed.addFields({
-      name: 'Transcript',
-      value: `[Lien direct](https://transcripts.qwartzcloud.fr/${fileName})`
-    });
+const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
+
+if (publicUrl) {
+  embed.addFields({
+    name: 'Transcript',
+    value: `[Lien direct](${publicUrl})`
+  });
+}
 
     await logsChannel.send({
       embeds: [embed],
