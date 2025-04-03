@@ -1,4 +1,4 @@
-import { getTicketDataByChannelId, deleteTicketData } from '../database/ticket.js';
+import { getTicketDataByChannelId, deleteTicketData } from '../database/db.js';
 import { generateTranscript } from '../utils/transcript.js';
 import { uploadTranscriptToSupabase } from './uploadTranscriptToSupabase.js';
 import { logTicketAction } from '../utils/logging.js';
