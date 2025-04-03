@@ -1,5 +1,5 @@
 import { handleCommand } from './commandHandler.js';
-import { handleInteraction } from '../events/interactionCreate.js';
+import handleInteraction from '../events/interactionCreate.js';
 import { handleMessageDelete, handleMessageUpdate, handleMessage } from '../events/messageEvents.js';
 import { config } from '../config.js';
 
