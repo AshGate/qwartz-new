@@ -27,7 +27,7 @@ export async function uploadTranscriptToSupabase(filePath, fileName) {
 
     if (error) throw error;
 
-    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/transcripts/${fileName}`;
+    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/transcripts/${fileName.replace(/^\/+/, '')}`;
     return publicUrl;
   } catch (err) {
     console.error('❌ Erreur Supabase transcript :', err.message);
