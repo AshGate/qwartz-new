@@ -18,13 +18,14 @@ export async function uploadTranscriptToSupabase(filePath, fileName) {
   try {
     const fileBuffer = fs.readFileSync(filePath);
 
-    const { error } = await supabase
-      .storage
-      .from('transcripts') // nom du bucket Supabase
-      .upload(fileName, fileBuffer, {
-        contentType: 'text/html',
-        upsert: true,
-      });
+// Ajoute ce champ quand tu uploades
+const { data, error } = await supabase.storage
+  .from('transcripts')
+  .upload(`ticket-${ticketNumber}.html`, buffer, {
+    cacheControl: '3600',
+    upsert: true,
+    contentType: 'text/html' // 👈 C’est ça la clé !
+  });
 
     if (error) throw error;
 
