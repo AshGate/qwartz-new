@@ -123,7 +123,6 @@ db.exec(`
   )
 `);
 
-// Insérer un exemple de facture
 db.exec(`
   INSERT OR REPLACE INTO invoices (
     id, guild_id, created_by, company_name, address, phone,
@@ -143,12 +142,21 @@ db.exec(`
   )
 `);
 
-// Insérer les articles de l'exemple
 db.exec(`
   INSERT OR REPLACE INTO invoice_items (invoice_id, name, quantity, unit_price)
   VALUES 
     (1, 'Tacos', 150, 33.95),
     (1, 'Livraison', 150, 1.94)
 `);
+
+export function getTicketDataByChannelId(channelId) {
+  const stmt = db.prepare('SELECT * FROM ticket_logs WHERE ticket_id = ?');
+  return stmt.get(channelId);
+}
+
+export function deleteTicketData(channelId) {
+  const stmt = db.prepare('DELETE FROM ticket_logs WHERE ticket_id = ?');
+  stmt.run(channelId);
+}
 
 export default db;
