@@ -12,19 +12,36 @@ export default async function interactionCreate(interaction) {
 
   if (customId === 'close_ticket') {
     const ticketData = getTicketDataByChannelId(channel.id);
-    if (!ticketData) return await interaction.reply({ content: '❌ Ce ticket n\'est pas enregistré.', ephemeral: true });
-
-    await interaction.reply({ content: 'Fermeture du ticket...', ephemeral: true });
+    if (!ticketData) {
+      return await interaction.reply({ content: '❌ Ce ticket n\'est pas enregistré.', ephemeral: true });
+    }
 
     const ticketNumber = ticketData.ticket_number;
     const fileName = `ticket-${ticketNumber}.html`;
-    const filePath = join(__dirname, '../../transcripts', fileName);
-
-    // Générer le transcript HTML
+    const filePath = join(process.cwd(), 'transcripts', fileName); // Corrigé pour éviter __dirname
     const transcript = await generateTranscript(channel);
     fs.writeFileSync(filePath, transcript, 'utf8');
 
-    // Logger + upload
+    const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
+
+    if (!publicUrl) {
+      return await interaction.reply({
+        content: '❌ Une erreur est survenue lors de l’upload du transcript.',
+        ephemeral: true,
+      });
+    }
+
+    await interaction.reply({
+      embeds: [
+        {
+          color: 0xed4245,
+          title: 'Ticket Fermé',
+          description: `Utilisateur: <@${member.id}>\nTicket: ${channel.name}\n\n**Transcript**\n[📄 Lien direct](${publicUrl})`,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+
     await logTicketAction(guild, {
       ticketId: channel.id,
       ticketNumber,
@@ -33,12 +50,10 @@ export default async function interactionCreate(interaction) {
       details: `Fermé par <@${member.id}>`
     });
 
-    // Supprimer après 5 sec
-    setTimeout(async () => {
-      await interaction.channel.delete();
-    }, 5000);
-
-    // Supprimer de la base
     deleteTicketData(channel.id);
+
+    setTimeout(async () => {
+      await channel.delete();
+    }, 5000);
   }
-} 
+}
