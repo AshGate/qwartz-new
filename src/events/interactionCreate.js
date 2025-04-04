@@ -11,49 +11,67 @@ export default async function interactionCreate(interaction) {
   const { customId, guild, member, channel } = interaction;
 
   if (customId === 'close_ticket') {
-    const ticketData = getTicketDataByChannelId(channel.id);
-    if (!ticketData) {
-      return await interaction.reply({ content: '❌ Ce ticket n\'est pas enregistré.', ephemeral: true });
-    }
+    console.log("📥 Interaction bouton : close_ticket");
 
-    const ticketNumber = ticketData.ticket_number;
-    const fileName = `ticket-${ticketNumber}.html`;
-    const filePath = join(process.cwd(), 'transcripts', fileName); // Corrigé pour éviter __dirname
-    const transcript = await generateTranscript(channel);
-    fs.writeFileSync(filePath, transcript, 'utf8');
+    try {
+      const ticketData = getTicketDataByChannelId(channel.id);
+      if (!ticketData) {
+        return await interaction.reply({ content: '❌ Ce ticket n\'est pas enregistré.', ephemeral: true });
+      }
 
-    const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
+      // 🔁 Réponse immédiate AVANT les opérations longues
+      await interaction.reply({ content: '⏳ Fermeture du ticket en cours...', ephemeral: true });
 
-    if (!publicUrl) {
-      return await interaction.reply({
-        content: '❌ Une erreur est survenue lors de l’upload du transcript.',
-        ephemeral: true,
+      const ticketNumber = ticketData.ticket_number;
+      const fileName = `ticket-${ticketNumber}.html`;
+      const filePath = join(process.cwd(), 'transcripts', fileName);
+
+      console.log("⏳ Génération transcript...");
+      const transcript = await generateTranscript(channel);
+      fs.writeFileSync(filePath, transcript, 'utf8');
+
+      console.log("⏳ Upload vers Supabase...");
+      const publicUrl = await uploadTranscriptToSupabase(filePath, fileName);
+      console.log("✅ URL :", publicUrl);
+
+      if (!publicUrl) {
+        return await interaction.followUp({
+          content: '❌ Une erreur est survenue lors de l’upload du transcript.',
+          ephemeral: true,
+        });
+      }
+
+      await interaction.followUp({
+        embeds: [
+          {
+            color: 0xed4245,
+            title: 'Ticket Fermé',
+            description: `Utilisateur: <@${member.id}>\nTicket: ${channel.name}\n\n**Transcript**\n[📄 Lien direct](${publicUrl})`,
+            timestamp: new Date().toISOString(),
+          },
+        ],
       });
+
+      await logTicketAction(guild, {
+        ticketId: channel.id,
+        ticketNumber,
+        userId: member.id,
+        action: 'closed',
+        details: `Fermé par <@${member.id}>`
+      });
+
+      deleteTicketData(channel.id);
+
+      setTimeout(async () => {
+        await channel.delete();
+      }, 5000);
+    } catch (err) {
+      console.error("❌ Erreur interaction close_ticket :", err);
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: '❌ Une erreur est survenue.', ephemeral: true });
+      } else {
+        await interaction.followUp({ content: '❌ Une erreur est survenue.', ephemeral: true });
+      }
     }
-
-    await interaction.reply({
-      embeds: [
-        {
-          color: 0xed4245,
-          title: 'Ticket Fermé',
-          description: `Utilisateur: <@${member.id}>\nTicket: ${channel.name}\n\n**Transcript**\n[📄 Lien direct](${publicUrl})`,
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    });
-
-    await logTicketAction(guild, {
-      ticketId: channel.id,
-      ticketNumber,
-      userId: member.id,
-      action: 'closed',
-      details: `Fermé par <@${member.id}>`
-    });
-
-    deleteTicketData(channel.id);
-
-    setTimeout(async () => {
-      await channel.delete();
-    }, 5000);
   }
 }
