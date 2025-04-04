@@ -10,6 +10,25 @@ export default async function interactionCreate(interaction) {
 
   const { customId, guild, member, channel } = interaction;
 
+  if (customId === 'create_ticket') {
+    console.log("📥 Interaction bouton : create_ticket");
+
+    try {
+      await interaction.reply({ content: '📨 Création du ticket...', ephemeral: true });
+
+      const { createTicket } = await import('../handlers/ticket.js');
+      await createTicket(interaction);
+
+    } catch (err) {
+      console.error('❌ Erreur création de ticket :', err);
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: '❌ Une erreur est survenue.', ephemeral: true });
+      } else {
+        await interaction.followUp({ content: '❌ Une erreur est survenue.', ephemeral: true });
+      }
+    }
+  }
+
   if (customId === 'close_ticket') {
     console.log("📥 Interaction bouton : close_ticket");
 
